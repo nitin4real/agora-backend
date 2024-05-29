@@ -1,12 +1,12 @@
 import express from 'express';
 import { RtcTokenBuilder, RtmTokenBuilder, RtcRole } from "agora-token"
 import cors from 'cors'
-
+import https from 'https'
+import fs from 'fs'
 const appId = '';
 const appCertificate = '';
-
-const port = 3020;
 const app = express();
+const PORT = process.env.PORT || 443; // HTTPS typically uses port 443
 
 app.use(cors())
 
@@ -16,8 +16,19 @@ app.get('/getToken', (req, res) => {
   res.send({ tokens: GenerateTokenForUserID(userId), appId });
 });
 
-app.listen(port, () => {
-  return console.log(`Express is listening at http://localhost:${port}`);
+const options = {
+  key: fs.readFileSync('./private.key'),
+  cert: fs.readFileSync('./server.cert')
+};
+
+
+const server = https.createServer(options, app);
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+app.listen('3030', () => {
+  return console.log(`Express is listening at 3030`);
 });
 
 export const GenerateTokenForUserID = (userId: string, channelName: string = '') => {
