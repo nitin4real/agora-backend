@@ -6,17 +6,19 @@ import fs from 'fs'
 const appId = '6a0d0b12f6074aad818c99ff9355d444';
 const appCertificate = '7c1ea51799fa4f059dd745ce9f83b31c';
 const app = express();
-const PORT = 3012 ; // HTTPS typically uses port 443
+const PORT = 3012; // HTTPS typically uses port 443
 
 app.use(cors({
-origin:'*'
+  origin: '*'
 }))
 
 app.get('/getToken', (req, res) => {
   console.log(req.query)
   const userId: string = req.query.userId as string
-  res.send({ tokens: GenerateTokenForUserID(userId), appId });
+  const channelName: string = req.query.channelName as string
+  res.send({ tokens: GenerateTokenForUserID(userId, channelName), appId });
 });
+
 
 const options = {
   key: fs.readFileSync('./server.key'),
