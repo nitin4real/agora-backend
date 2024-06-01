@@ -8,6 +8,11 @@ const appCertificate = '7c1ea51799fa4f059dd745ce9f83b31c';
 const app = express();
 const PORT = 3012; // HTTPS typically uses port 443
 
+app.use((req, res, next) => {
+  console.log('request recived')
+  next()
+})
+
 app.use(cors({
   origin: '*'
 }))
@@ -15,8 +20,9 @@ app.use(cors({
 app.get('/getToken', (req, res) => {
   console.log(req.query)
   const userId: string = req.query.userId as string
+  const uid:string = String(userNameToUid(userId));
   const channelName: string = req.query.channelName as string
-  res.send({ tokens: GenerateTokenForUserID(userId, channelName), appId });
+  res.send({ tokens: GenerateTokenForUserID(uid, channelName), appId, uid  });
 });
 
 
@@ -35,8 +41,7 @@ app.listen('3013', () => {
   return console.log(`Express is listening at 3030`);
 });
 
-export const GenerateTokenForUserID = (userId: string, channelName: string = '') => {
-  const uid: string = userId;
+export const GenerateTokenForUserID = (uid: string, channelName: string = '') => {
   const expirationTimeInSeconds = 6000
   const currentTimestamp = Math.floor(Date.now() / 1000)
   const privilegeExpiredTs = currentTimestamp + expirationTimeInSeconds
@@ -56,8 +61,14 @@ export const GenerateTokenForUserID = (userId: string, channelName: string = '')
     RtmTokenBuilder.buildToken(
       appId,
       appCertificate,
-      userId,
+      uid,
       expirationTimeInSeconds
     )
   return { rtcToken, rtmToken }
+}
+
+function userNameToUid(username: string): number {
+  const uniqueNumber = Math.floor(Math.random() * 10000)
+  //here every user should be mapped to a number and be saved in the db for later tally//
+  return uniqueNumber
 }
