@@ -16,13 +16,27 @@ app.use((req, res, next) => {
 app.use(cors({
   origin: '*'
 }))
+interface StringMap {
+  [key: string]: string;
+}
+const uid_name_pair: StringMap = {}
 
 app.get('/getToken', (req, res) => {
   console.log(req.query)
   const userId: string = req.query.userId as string
-  const uid:string = String(userNameToUid(userId));
+  const uid: string = String(userNameToUid(userId));
   const channelName: string = req.query.channelName as string
-  res.send({ tokens: GenerateTokenForUserID(uid, channelName), appId, uid  });
+  uid_name_pair[`${uid}`] = userId
+  console.log('sertting',userId,uid,uid_name_pair)
+  res.send({ tokens: GenerateTokenForUserID(uid, channelName), appId, uid });
+});
+
+
+app.get('/getUserName', (req, res) => {
+  console.log(req.query)
+  const uid: string = req.query.uid as string
+  console.log(uid_name_pair)
+  res.send({ uid, userName: uid_name_pair[`${uid}`] });
 });
 
 
