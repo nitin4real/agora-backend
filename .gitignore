@@ -10,3 +10,6 @@ server.cert
 server.key
 t.py
 dist
+google-cloud-cli-linux-x86_64.tar.gz
+dist
+certs
