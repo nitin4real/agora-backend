@@ -34,14 +34,13 @@ app.get('/getToken', (req, res) => {
   const uid: string = String(userNameToUid(userId));
   const channelName: string = req.query.channelName as string
   uid_name_pair[`${uid}`] = userId
-  console.log('sertting', userId, uid, uid_name_pair)
+  console.log(`Register New User with ${uid} with ${userId}`)
   res.send({ tokens: GenerateTokenForUserID(uid, channelName), appId, uid });
 });
 
 app.get('/getUserName', (req, res) => {
   console.log(req.query)
   const uid: string = req.query.uid as string
-  console.log(uid_name_pair)
   res.send({ uid, userName: uid_name_pair[`${uid}`] });
 });
 
@@ -55,6 +54,7 @@ const options = {
 // app.listen('3013', () => {
 //   return console.log(`Express is listening at 3030`);
 // });
+
 export const GenerateTokenForUserID = (uid: string, channelName: string = '') => {
   const expirationTimeInSeconds = 6000
   const currentTimestamp = Math.floor(Date.now() / 1000)
@@ -127,25 +127,25 @@ type ConnectionNodeMap = Map<string, ConnectionNode> // {UID, ConnectionNode}
 
 
 const languageListeners = new Map<Language_Read, ConnectionNodeMap>()
+
 const translateAndSendToAll = async (textToTranslate: string, targetLang: Language_Read, speakerUID: string) => {
   // can optimize for eng -> eng translations
   let [translations] = await translatorService.translate(textToTranslate, targetLang);
 
   const allListeners = languageListeners.get(targetLang)
-  console.log('target - language', targetLang)
-  console.log('transcription', textToTranslate)
-  console.log('translations', translations)
+  console.log(`sending data to all the users who understand - ${targetLang} of the speaker - ${speakerUID}`)
   allListeners.forEach((listener) => {
     const connectionSocket = listener.socket
+    console.log(`sending to - ${listener.UID}`)
     connectionSocket.emit('translationData', translations, speakerUID)
   })
 }
 
 
 const onTranscribe = (transcribedText: string, speakerUID: string) => {
-  for (let language of languageListeners.keys()) {
+  for (let languageRead of languageListeners.keys()) {
     //for each of these languages translate the transcribed text and send to the respective listeners
-    translateAndSendToAll(transcribedText, language, speakerUID)
+    translateAndSendToAll(transcribedText, languageRead, speakerUID)
   }
 }
 
@@ -166,7 +166,6 @@ const handleSocketConnection = (speakerUID: string, language: Language_Spoken, s
   languageListeners.get(languageRead).set(speakerUID, connectionNode)
 
   socket.on('disconnect', () => {
-    const languageRead = languageMap.get(language)
     const allListeners = languageListeners.get(languageRead)
     allListeners.delete(speakerUID)
     if (allListeners.size === 0) {
@@ -228,7 +227,6 @@ const startTranslatorServices = async (audioData, language: Language_Spoken) => 
   };
 
   const [response] = await speechClient.recognize(request,)
-  console.log(response.totalBilledTime)
   const transcription = response.results
     .map(result => result.alternatives[0].transcript)
     .join('\n');

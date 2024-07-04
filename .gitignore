@@ -10,3 +10,8 @@ server.cert
 server.key
 t.py
 dist
+sync-request.json
+dist/app.js
+dist/app.js.map
+privkey.pem
+cert.pem
