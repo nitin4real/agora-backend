@@ -19,7 +19,6 @@ app.use(cors({
   origin: '*'
 }))
 app.use((req, res, next) => {
-  console.log('request recived')
   next()
 })
 
@@ -29,7 +28,6 @@ interface StringMap {
 const uid_name_pair: StringMap = {}
 
 app.get('/getToken', (req, res) => {
-  console.log(req.query)
   const userId: string = req.query.userId as string
   const uid: string = String(userNameToUid(userId));
   const channelName: string = req.query.channelName as string
@@ -39,7 +37,6 @@ app.get('/getToken', (req, res) => {
 });
 
 app.get('/getUserName', (req, res) => {
-  console.log(req.query)
   const uid: string = req.query.uid as string
   res.send({ uid, userName: uid_name_pair[`${uid}`] });
 });
