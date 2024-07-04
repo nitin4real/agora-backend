@@ -45,12 +45,12 @@ app.get('/getUserName', (req, res) => {
   res.send({ uid, userName: uid_name_pair[`${uid}`] });
 });
 
-
 const options = {
-  key: fs.readFileSync('./server.key'),
-  cert: fs.readFileSync('./server.cert')
+  key: fs.readFileSync('./privkey.pem'),
+  cert: fs.readFileSync('./cert.pem')
 };
 
+ 
 
 // app.listen('3013', () => {
 //   return console.log(`Express is listening at 3030`);

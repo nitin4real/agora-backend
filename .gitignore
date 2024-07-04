@@ -13,3 +13,5 @@ dist
 google-cloud-cli-linux-x86_64.tar.gz
 dist
 certs
+cert.pem
+privkey.pem
