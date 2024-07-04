@@ -1,3 +1,12 @@
 node_modules
 package-lock.json
 .env
+google-cloud-sdk
+.swn
+.swo
+.swp
+google-cloud-cli-481.0.0-linux-x86_64.tar.gz
+server.cert
+server.key
+t.py
+dist
