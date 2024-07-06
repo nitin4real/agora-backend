@@ -127,13 +127,14 @@ const languageListeners = new Map<Language_Read, ConnectionNodeMap>()
 
 const translateAndSendToAll = async (textToTranslate: string, targetLang: Language_Read, speakerUID: string) => {
   // can optimize for eng -> eng translations
-  let [translations] = await translatorService.translate(textToTranslate, targetLang);
-
+  let [translations] = ['translated text dummy']
+  // await translatorService.translate(textToTranslate, targetLang);
+  console.log(speakerUID, 'spoken words are now translated and being sent to everyone')
   const allListeners = languageListeners.get(targetLang)
-  console.log(`sending data to all the users who understand - ${targetLang} of the speaker - ${speakerUID}`)
+  // console.log(`sending data to all the users who understand - ${targetLang} of the speaker - ${speakerUID}`)
   allListeners.forEach((listener) => {
     const connectionSocket = listener.socket
-    console.log(`sending to - ${listener.UID}`)
+    // console.log(`sending to - ${listener.UID}`)
     connectionSocket.emit('translationData', translations, speakerUID)
   })
 }
@@ -163,8 +164,9 @@ const handleSocketConnection = (speakerUID: string, language: Language_Spoken, s
   languageListeners.get(languageRead).set(speakerUID, connectionNode)
 
   socket.on('disconnect', () => {
+    console.log('disconnecting the user with uid - langRead', speakerUID, languageRead)
     const allListeners = languageListeners.get(languageRead)
-    allListeners.delete(speakerUID)
+    allListeners?.delete(speakerUID)
     if (allListeners.size === 0) {
       //remove the language so it does not gets translated to this langauge again
       languageListeners.delete(languageRead)
@@ -174,6 +176,7 @@ const handleSocketConnection = (speakerUID: string, language: Language_Spoken, s
   })
 
   socket.on('audioStream', async (data) => {
+    console.log(speakerUID, 'spoke something')
     const transcription: string = await startTranslatorServices(data, language)
     onTranscribe(transcription, speakerUID)
   })
@@ -190,12 +193,17 @@ const socketServer = new SocketServer(HTTPS_SERVER, {
 socketServer.on('connection', (socket) => {
   const {
     languageCode,
-    userUid
+    userUid,
+    channelName
   } = socket.handshake.query as {
     languageCode: Language_Spoken,
-    userUid: string
+    userUid: string,
+    channelName: string
   }
+console.log('joined socket with uid lang - ', userUid, languageCode)
+  // if (channelName === 'channel') {
   handleSocketConnection(userUid, languageCode, socket)
+  // }
 });
 
 const speechClient = new speech.SpeechClient();
@@ -209,6 +217,7 @@ const speechClient = new speech.SpeechClient();
 // };
 
 const startTranslatorServices = async (audioData, language: Language_Spoken) => {
+  return 'transcription text dummy'
   const config: google.cloud.speech.v1p1beta1.IRecognitionConfig = {
     encoding: 'WEBM_OPUS',
     sampleRateHertz: 48000,
