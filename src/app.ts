@@ -142,7 +142,7 @@ const handleSocketConnection = (speakerUID: string, language: Language_Spoken, s
     console.log('disconnecting the user with uid - langRead', speakerUID, languageRead)
     const allListeners = languageListeners.get(languageRead)
     allListeners?.delete(speakerUID)
-    if (allListeners.size === 0) {
+    if (allListeners?.size === 0) {
       //remove the language so it does not gets translated to this langauge again
       languageListeners.delete(languageRead)
     }
