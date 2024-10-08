@@ -29,7 +29,7 @@ app.get('/getToken', (req, res) => {
   const uid: string = String(userNameToUid(userId));
   const channelName: string = req.query.channelName as string
   uid_name_pair[`${uid}`] = userId
-  console.log(`Register New User with ${uid} with ${userId}`)
+  console.log(`${new Date().toLocaleString()}: Register New User with ${uid} with ${userId} on channel ${channelName}`)
   res.send({ tokens: GenerateTokenForUserID(uid, channelName), appId, uid });
 });
 
@@ -39,8 +39,8 @@ app.get('/getUserName', (req, res) => {
 });
 
 const options = {
-  key: fs.readFileSync('./privkey.pem'),
-  cert: fs.readFileSync('./cert.pem')
+  key: fs.readFileSync('/etc/letsencrypt/live/nitinsingh.in/privkey.pem'),
+  cert: fs.readFileSync('/etc/letsencrypt/live/nitinsingh.in/cert.pem')
 };
 
 
@@ -108,6 +108,7 @@ const languageListeners = new Map<Language_Read, ConnectionNodeMap>()
 const translateAndSendToAll = async (textToTranslate: string, targetLang: Language_Read, speakerUID: string) => {
   let [translations] = await translatorService.translate(textToTranslate, targetLang);
   const allListeners = languageListeners.get(targetLang)
+  console.log(`${speakerUID} said: ${translations}`)
   allListeners.forEach((listener) => {
     const connectionSocket = listener.socket
     connectionSocket.emit('translationData', translations, speakerUID)
@@ -180,7 +181,7 @@ socketServer.on('connection', (socket) => {
     channelName: string
   }
   console.log('joined socket with uid lang - ', userUid, languageCode)
-  if (channelName === 'channel') {
+  if (false && channelName === 'channel') {
     handleSocketConnection(userUid, languageCode, socket)
   }
 });
