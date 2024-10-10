@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npx tsc && node ./dist/app.js"
+    "start": "npx tsc && node --env-file=.env ./dist/app.js"
   },
   "keywords": [],
   "author": "",
@@ -17,6 +17,7 @@
   "dependencies": {
     "@google-cloud/speech": "^6.6.0",
     "@google-cloud/translate": "^8.3.0",
+    "@openai/realtime-api-beta": "github:openai/openai-realtime-api-beta",
     "agora-token": "^2.0.3",
     "cors": "^2.8.5",
     "express": "^4.19.2",
