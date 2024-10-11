@@ -20,3 +20,5 @@ dist
 certs
 cert.pem
 privkey.pem
+runningOut.txt
+ExmplOutPut.txt

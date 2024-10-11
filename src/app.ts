@@ -121,7 +121,7 @@ const activeUsers = new Map<string, ConnectionNode>() // {UID, ConnectionNode}
 
 const handleSocketConnection = (speakerUID: string, language: Language_Spoken, socket: Socket) => {
   const languageUserUnderstands = languageNameMap[language];
-  const addNewLanguageForExistingUsers = languagePool.has(languageUserUnderstands)
+  const addNewLanguageForExistingUsers = !languagePool.has(languageUserUnderstands)
 
   const newUserConnectionNode: ConnectionNode = {
     socket: socket,
@@ -137,22 +137,21 @@ const handleSocketConnection = (speakerUID: string, language: Language_Spoken, s
   }
 
   languageListeners.get(languageUserUnderstands).set(speakerUID, newUserConnectionNode)
-
   for (const language of languagePool.values()) {
     // create a ai for all the languages for this user
+    console.log("Creating a new AI Model for ", speakerUID, " for language ", language)
     const translator = new OpenAIConnection(languageUserUnderstands, language, (audio, eventId) => {
       // send this audio to all the users who understand lanugage
       // except for the user itself
       const userListListeningToLanuguage = languageListeners.get(language)
       for (const listenerUserConnectionNode of userListListeningToLanuguage.values()) {
         if (speakerUID !== listenerUserConnectionNode.UID) {
-          listenerUserConnectionNode.socket.emit('conversation.updated', audio, eventId)
+          listenerUserConnectionNode.socket.emit('translatedAudio', audio, eventId)
         }
       }
     })
     newUserConnectionNode.AIConnections.set(language, translator)
   }
-
 
   if (addNewLanguageForExistingUsers) {
     // add a new ai for all the prev users for this new language
@@ -161,11 +160,12 @@ const handleSocketConnection = (speakerUID: string, language: Language_Spoken, s
       const languageNameOfActiveUser: Language_Name = languageNameMap[activeUserLanguage];
       const targetLanguage = languageUserUnderstands
       if (activeUserConnection.AIConnections.has(targetLanguage)) continue; // this case should ideally be never true // but just in case
+      console.log("Creating a new AI Model for ", speakerUID, " for language ", language)
       const newTranslator = new OpenAIConnection(languageNameOfActiveUser, targetLanguage, (audio, eventId) => {
         const userListListeningToLanuguage = languageListeners.get(targetLanguage)
         for (const listenerUserConnectionNode of userListListeningToLanuguage.values()) {
           if (activeUserConnection.UID !== listenerUserConnectionNode.UID) {
-            listenerUserConnectionNode.socket.emit('conversation.updated', audio, eventId)
+            listenerUserConnectionNode.socket.emit('translatedAudio', audio, eventId)
           }
         }
       })
@@ -174,10 +174,9 @@ const handleSocketConnection = (speakerUID: string, language: Language_Spoken, s
   }
 
   socket.on('audioData', (data) => {
-    // send this data to all the ai of this user
     const listeningAIs = newUserConnectionNode.AIConnections.values()
     for (const ai of listeningAIs) {
-      ai.addAudio(data)
+      ai.addAudio(bufferToInt16(data))
     }
   })
 
@@ -212,7 +211,6 @@ const handleSocketConnection = (speakerUID: string, language: Language_Spoken, s
       languageListeners.delete(languageUserUnderstands)
     }
   })
-
 }
 
 const HTTP_SERVER = http.createServer(app);
@@ -239,10 +237,9 @@ socketServer.on('connection', (socket) => {
     userUid: string,
     channelName: string
   }
-  console.log('joined socket with uid lang - ', userUid, languageCode)
-  // if (t && channelName === 'channel') {
+  if (channelName === 'channel') {
     handleSocketConnection(userUid, languageCode, socket)
-  // }
+  }
 });
 
 
@@ -267,4 +264,17 @@ HTTP_SERVER.listen(3013, () => {
 
 
 
-
+// function arrayBufferToBase64(buffer) {
+//   let binaryString = '';
+//   const bytes = new Uint8Array(buffer);
+//   const len = bytes.byteLength;
+//   for (let i = 0; i < len; i++) {
+//     binaryString += String.fromCharCode(bytes[i]);
+//   }
+//   return binaryString
+// }
+function bufferToInt16(buffer) {
+  const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+  const int16Array = new Int16Array(arrayBuffer);
+  return int16Array
+}
