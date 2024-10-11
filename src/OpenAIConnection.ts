@@ -1,4 +1,4 @@
-import { RealtimeClient } from "@openai/realtime-api-beta";
+import { RealtimeClient } from "../@openai/realtime-api-beta";
 import { Language_Name } from "./app";
 import { getInstructions } from "./Instructions";
 
