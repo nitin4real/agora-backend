@@ -213,19 +213,19 @@ const handleSocketConnection = (speakerUID: string, language: Language_Spoken, s
   })
 }
 
-const HTTP_SERVER = http.createServer(app);
-const socketServer = new SocketServer(HTTP_SERVER, {
-  cors: {
-    origin: '*'
-  }
-})
-
-// const HTTPS_SERVER = https.createServer(options, app);
-// const socketServer = new SocketServer(HTTPS_SERVER, {
+// const HTTP_SERVER = http.createServer(app);
+// const socketServer = new SocketServer(HTTP_SERVER, {
 //   cors: {
 //     origin: '*'
 //   }
 // })
+
+const HTTPS_SERVER = https.createServer(options, app);
+const socketServer = new SocketServer(HTTPS_SERVER, {
+  cors: {
+    origin: '*'
+  }
+})
 
 socketServer.on('connection', (socket) => {
   const {
@@ -247,15 +247,15 @@ const startTranslatorServices = async (audioData, language: Language_Spoken) => 
 
 
 
-HTTP_SERVER.listen(3013, () => {
-  return console.log(`HTTP SERVER is listening at 3013`);
-})
+// HTTP_SERVER.listen(3013, () => {
+//   return console.log(`HTTP SERVER is listening at 3013`);
+// })
 
 
 
-// HTTPS_SERVER.listen(PORT, () => {
-//   console.log(`HTTPS SERVER is running on port ${PORT}`);
-// });
+HTTPS_SERVER.listen(PORT, () => {
+  console.log(`HTTPS SERVER is running on port ${PORT}`);
+});
 
 
 
