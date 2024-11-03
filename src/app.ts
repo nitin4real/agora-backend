@@ -6,7 +6,7 @@ import fs from 'fs';
 import { userNameToUid } from "./utils";
 import { GenerateTokenForUserID } from "./agoraTokenGenerator";
 import { LanguageName } from './supportedLanguages';
-import { addUser, clearAllData, getUserName } from './liveData';
+import { addUser, clearAllData, getUserName, logAllUsersAndBots, removeBotAndUser, removeUserAndBots } from './liveData';
 import { IUserData } from './interface';
 import { generateBots } from './translatorUtils';
 
@@ -24,6 +24,7 @@ app.use(cors({
 app.use((req, res, next) => {
   next()
 })
+app.use(express.json());
 
 app.get('/getToken', (req, res) => {
   const userName = req.query.userId;
@@ -60,10 +61,11 @@ app.get('/getToken', (req, res) => {
 
 app.get('/getUserName', (req, res) => {
   const uid: string = req.query.uid as string
+  const channelName: string = req.query.channelName as string
   res.send(
     {
       uid,
-      userName: getUserName(uid)
+      userName: getUserName(uid, channelName)
     });
 });
 
@@ -73,6 +75,20 @@ app.get('/clearAll', (req, res) => {
   res.send({ message: 'All users are cleared' });
 });
 
+
+app.post('/user_left', (req, res) => {
+  const uid = req?.body?.user_id;
+  const channel_name = req?.body?.channel_name;
+
+  if (typeof uid !== 'string' || typeof channel_name !== 'string') {
+    return res.status(400).send({ error: 'Invalid parameters' });
+  }
+  removeBotAndUser(uid, channel_name);
+  removeUserAndBots(uid, channel_name);
+  logAllUsersAndBots(channel_name);
+
+  res.send({ message: 'User Left the channel' });
+})
 
 const options = {
   // key: fs.readFileSync('/etc/letsencrypt/live/nitinsingh.in/privkey.pem'),
