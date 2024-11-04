@@ -28,7 +28,7 @@ export function generateBots(userData: IUserData) {
     const activeLanguagesInChannel = getActiveLanguages(channel);
     allActiveUsers.forEach(user => {
         activeLanguagesInChannel.forEach(targetLanguage => {
-            const languageBotID = generateBotID(uid, user.language, targetLanguage);
+            const languageBotID = generateBotID(user.uid, user.language, targetLanguage);
             if (!doesBotExist(languageBotID, channel)) {
                 createBot(channel, languageBotID, user.uid, user.language, targetLanguage);
             }
