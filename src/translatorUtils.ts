@@ -4,6 +4,16 @@ import { IUserData } from "./interface";
 import { languageCodeList, LanguageName } from "./supportedLanguages";
 import { addBotId, doesBotExist, getActiveLanguages, getActiveUsers } from "./liveData";
 
+interface BotData {
+    channelName: string;
+    botID: string;
+    target_user_id: string;
+    srcLanguage: LanguageName;
+    targetLanguage: LanguageName;
+}
+
+const botQueue: Array<BotData> = new Array();
+
 async function createBot(channelName: string, botID: string, target_user_id: string, srcLanguage: LanguageName, targetLanguage: LanguageName) {
     try {
         addBotId(botID, channelName)
@@ -20,6 +30,13 @@ async function createBot(channelName: string, botID: string, target_user_id: str
     }
 }
 
+setInterval(() => {
+    const botData = botQueue.shift();
+    if (botData) {
+        createBot(botData.channelName, botData.botID, botData.target_user_id, botData.srcLanguage, botData.targetLanguage);
+    }
+}, 1500)
+
 // generate bots for all the languages
 export function generateBots(userData: IUserData) {
     const { uid, language, channel } = userData;
@@ -30,7 +47,8 @@ export function generateBots(userData: IUserData) {
         activeLanguagesInChannel.forEach(targetLanguage => {
             const languageBotID = generateBotID(user.uid, user.language, targetLanguage);
             if (!doesBotExist(languageBotID, channel)) {
-                createBot(channel, languageBotID, user.uid, user.language, targetLanguage);
+                botQueue.push({ channelName: channel, botID: languageBotID, target_user_id: user.uid, srcLanguage: user.language, targetLanguage });
+                // createBot(channel, languageBotID, user.uid, user.language, targetLanguage);
             }
         })
     })
