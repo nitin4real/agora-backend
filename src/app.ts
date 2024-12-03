@@ -39,7 +39,7 @@ app.get('/getToken', (req, res) => {
 
   if(isRecorder){
     console.log(`${new Date().toLocaleString()}: Register New Recorder with ${channelName} ${req.query.isRecorder}`);
-    res.send({ tokens: GenerateTokenForUserID('recorder', channelName), appId, uid: "-1" });
+    res.send({ tokens: GenerateTokenForUserID('11', channelName), appId, uid: "11" });
     return;
   }
 
