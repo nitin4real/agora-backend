@@ -30,6 +30,18 @@ app.get('/getToken', (req, res) => {
   const userName = req.query.userId;
   const language = req.query.language;
   const channelName = req.query.channelName;
+  const isRecorder = req.query.isRecorder == 'true';
+
+  if (typeof channelName !== 'string') {
+    console.log('Invalid channel name parameter')
+    return res.status(400).send({ error: 'Invalid channelName parameter' });
+  }
+
+  if(isRecorder){
+    console.log(`${new Date().toLocaleString()}: Register New Recorder with ${channelName} ${req.query.isRecorder}`);
+    res.send({ tokens: GenerateTokenForUserID('recorder', channelName), appId, uid: "-1" });
+    return;
+  }
 
   if (typeof userName !== 'string') {
     console.log('Invalid userName parameter')
