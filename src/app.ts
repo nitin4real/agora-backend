@@ -9,6 +9,7 @@ import { LanguageName } from './supportedLanguages';
 import { addUser, clearAllData, getUserName, logAllUsersAndBots, removeBotAndUser, removeUserAndBots } from './liveData';
 import { IUserData } from './interface';
 import { generateBots } from './translatorUtils';
+import { isRecordingRunning, startWebRecordService, stopAllRecordings, stopWebRecordService } from './webRecordService';
 
 export const appId = process.env.AGORA_APP_ID
 export const appCertificate = process.env.AGORA_CERT
@@ -80,6 +81,43 @@ app.get('/getUserName', (req, res) => {
       userName: getUserName(uid, channelName)
     });
 });
+
+app.get('/startRecording', (req, res) => {
+  const channelName: string = req.query.channelName as string
+  startWebRecordService(channelName).then((status) => {
+    res.send({ status });
+  }).catch((err) => {
+    res.status(500).send({ error: err });
+  });
+});
+
+app.get('/stopRecording', (req, res) => {
+  const channelName: string = req.query.channelName as string
+  stopWebRecordService(channelName).then((status) => {
+    res.send({ status });
+  }).catch((err) => {
+    res.status(500).send({ error: err });
+  });
+});
+
+app.get('/isRecordingRunning', (req, res) => {
+  try {
+    const channelName: string = req.query.channelName as string
+    res.send({ isRecordingRunning: isRecordingRunning(channelName) });
+  } catch (err) {
+    res.status(500).send({ error: 'Could Not Find Channel' });
+  }
+})
+
+app.get('/stopAllRecordings', (req, res) => {
+  try {
+    stopAllRecordings();
+    res.send({ success: true });
+  } catch (err) {
+    res.status(500).send({ err });
+  }
+})
+
 
 // route to clear all the active users and live languages
 app.get('/clearAll', (req, res) => {
