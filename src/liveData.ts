@@ -1,5 +1,6 @@
 import { IUserData } from './interface';
 import { LanguageName } from './supportedLanguages';
+import { stopWebRecordService } from './webRecordService';
 
 export const activeUsers: Map<string, IUserData[]> = new Map<string, IUserData[]>();
 export const activeBotsIds: Map<string, string[]> = new Map<string, string[]>(); // channelName -> Set of botIds in the channel
@@ -130,6 +131,9 @@ function logAllUsers(channelName){
     console.log(`Users in ${channelName}`)
     console.log('---------------------')
     if(users){
+        if(users?.length === 0){
+            stopWebRecordService(channelName)
+        }
         users.forEach(user => {
             console.log(user)
         })
