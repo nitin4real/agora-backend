@@ -38,9 +38,13 @@ app.get('/getToken', (req, res) => {
     return res.status(400).send({ error: 'Invalid channelName parameter' });
   }
 
-  if(isRecorder){
+  if (isRecorder) {
     console.log(`${new Date().toLocaleString()}: Register New Recorder with ${channelName} ${req.query.isRecorder}`);
-    res.send({ tokens: GenerateTokenForUserID('11', channelName), appId, uid: "11" });
+    GenerateTokenForUserID('11', channelName).then((tokens) => {
+      res.send({ tokens, appId, uid: "11", appkey });
+    }).catch((err) => {
+      res.status(500).send({ error: err });
+    })
     return;
   }
 
@@ -69,7 +73,11 @@ app.get('/getToken', (req, res) => {
   generateBots(userData)
   console.log(`${new Date().toLocaleString()}: Register New User with ${uid} with ${userName} on channel ${channelName}`);
   // call the agent to join the channel
-  res.send({ tokens: GenerateTokenForUserID(uid, channelName), appId, uid });
+  GenerateTokenForUserID(uid, channelName).then((tokens) => {
+    res.send({ tokens, appId, uid, appkey });
+  }).catch((err) => {
+    res.status(500).send({ error: err });
+  })
 });
 
 app.get('/getUserName', (req, res) => {

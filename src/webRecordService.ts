@@ -147,7 +147,7 @@ export const startWebRecordService = async (channelName: string): Promise<Record
         return RecorderStatus.STARTED
     } catch (error) {
         stopRecorderInstance(channelName)
-        console.log('error in starting the recording', error.status, error.message)
+        console.log('error in starting the recording', error?.status, error?.message)
         return RecorderStatus.ERROR
     }
 }
@@ -180,7 +180,7 @@ export const stopWebRecordService = async (channelName: string): Promise<Recorde
         return RecorderStatus.STOPPED
     }
     catch (error) {
-        console.log('error in stoping the recording', error)
+        console.log('error in stoping the recording', error?.status, error?.message)
         return RecorderStatus.ERROR
     }
 }

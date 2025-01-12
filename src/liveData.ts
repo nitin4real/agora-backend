@@ -5,6 +5,7 @@ import { stopWebRecordService } from './webRecordService';
 export const activeUsers: Map<string, IUserData[]> = new Map<string, IUserData[]>();
 export const activeBotsIds: Map<string, string[]> = new Map<string, string[]>(); // channelName -> Set of botIds in the channel
 export const liveLanguages: Map<string, Set<LanguageName>> = new Map<string, Set<LanguageName>>(); // channelName -> Set of languages in the channel
+export const activeChatRoomIds = new Map<string, string>(); // channelName -> chatRoomId
 
 // get all active users
 export function getActiveUsers(channelName: string) {
@@ -87,6 +88,7 @@ export function clearAllData() {
     activeUsers.clear();
     liveLanguages.clear();
     activeBotsIds.clear();
+    activeChatRoomIds.clear();
 }
 
 export function removeUserAndBots(userId: string, channelName: string) {
@@ -144,4 +146,22 @@ function logAllUsers(channelName){
 export function logAllUsersAndBots(channelName){
     logAllUsers(channelName)
     logAllBots(channelName)
+}
+
+
+// add active channelRoomId
+export function addChatRoomId(channelName: string, chatRoomId: string) {
+    activeChatRoomIds.set(channelName, chatRoomId);
+}
+
+export function getChatRoomId(channelName: string) {
+    return activeChatRoomIds.get(channelName);
+}
+
+export function removeChatRoomId(channelName: string) {
+    activeChatRoomIds.delete(channelName);
+}
+
+export function isChatRoomIdActive(channelName: string) {
+    return activeChatRoomIds.has(channelName);
 }
