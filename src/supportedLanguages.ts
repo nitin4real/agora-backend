@@ -11,6 +11,7 @@ export enum LanguageName {
   Armenian = 'Armenian',
   Azerbaijani = 'Azerbaijani',
   Belarusian = 'Belarusian',
+  Bengali = 'Bengali',
   Bosnian = 'Bosnian',
   Bulgarian = 'Bulgarian',
   Catalan = 'Catalan',
@@ -122,5 +123,6 @@ export const languageCodeList: languageCodeObj[] = [
   { name: LanguageName.Ukrainian, code: '54', isoCode: 'uk' },
   { name: LanguageName.Urdu, code: '55', isoCode: 'ur' },
   { name: LanguageName.Vietnamese, code: '56', isoCode: 'vi' },
-  { name: LanguageName.Welsh, code: '57', isoCode: 'cy' }
+  { name: LanguageName.Welsh, code: '57', isoCode: 'cy' },
+  { name: LanguageName.Bengali, code: '58', isoCode: 'bn'}
 ];

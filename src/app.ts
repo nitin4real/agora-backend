@@ -11,9 +11,11 @@ import { IUserData } from './interface';
 import { generateBots } from './translatorUtils';
 import { isRecordingRunning, startWebRecordService, stopAllRecordings, stopWebRecordService } from './webRecordService';
 
-export const appId = process.env.AGORA_APP_ID
-export const appCertificate = process.env.AGORA_CERT
-
+export const appId = ''
+export const appCertificate = ''
+export const appkey = ''
+export const orgName = ''
+export const appName = ''
 
 const app = express();
 const PORT = 3012; // HTTPS typically uses port 443

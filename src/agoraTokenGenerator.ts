@@ -1,5 +1,5 @@
 import { RtcRole, RtcTokenBuilder, RtmTokenBuilder, ChatTokenBuilder } from "agora-token";
-import { appId, appCertificate } from "./app";
+import { appId, appCertificate, orgName, appName } from "./app";
 import axios from "axios";
 import { addChatRoomId, getChatRoomId, isChatRoomIdActive } from "./liveData";
 
@@ -60,7 +60,7 @@ export const GenerateTokenForUserID = async (uid: string, channelName: string = 
 const registerUser = async (uid: string) => {
   if (uid.length !== 4) return 'Invalid uid'
   try {
-    const registerUserResponse = await axios.post(`https://a61.chat.agora.io/611155502/1341943/users`,
+    const registerUserResponse = await axios.post(`https://a61.chat.agora.io/${orgName}/${appName}/users`,
       {
         username: uid
       },
@@ -91,7 +91,7 @@ const createChatRoom = async (channelName, uid) => {
     return getChatRoomId(channelName)
   }
   try {
-    const chatRoomCreateResponse = await axios.post(`https://a61.chat.agora.io/611155502/1341943/chatrooms`,
+    const chatRoomCreateResponse = await axios.post(`https://a61.chat.agora.io/${orgName}/${appName}/chatrooms`,
       {
         name: channelName,
         desc: 'Chat room for the channel',
