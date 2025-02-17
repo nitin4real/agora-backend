@@ -156,7 +156,7 @@ export const stopWebRecordService = async (channelName: string): Promise<Recorde
     try {
         console.log('Stop recording')
         const recorderInstance = getRecorderInstance(channelName)
-        if(recorderInstance === undefined) {
+        if (recorderInstance === undefined) {
             return RecorderStatus.ERROR
         }
         const stopResponse = await axios.post(`https://api.agora.io/v1/apps/${appId}/cloud_recording/resourceid/${recorderInstance.resourceId}/sid/${recorderInstance.sid}/mode/web/stop`,
@@ -190,4 +190,12 @@ export const stopAllRecordings = async () => {
     recorderInstances.forEach(async (recorderInstance) => {
         await stopWebRecordService(recorderInstance.channelName)
     })
+}
+
+export {
+    S2_BUCKET,
+    S2_SECRET_KEY,
+    S2_ACCESS_KEY_ID,
+    CUSTOMER_SECRET,
+    CUSTOMERID,
 }

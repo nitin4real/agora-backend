@@ -1,7 +1,7 @@
 import axios from "axios";
 import { generateBotID, generatePromptForAgent } from "./utils";
 import { IUserData } from "./interface";
-import { languageCodeList, LanguageName } from "./supportedLanguages";
+import { languageCodeList, LanguageName, VoiceId } from "./supportedLanguages";
 import { addBotId, doesBotExist, getActiveLanguages, getActiveUsers } from "./liveData";
 
 interface BotData {
@@ -10,11 +10,12 @@ interface BotData {
     target_user_id: string;
     srcLanguage: LanguageName;
     targetLanguage: LanguageName;
+    voiceId: VoiceId;
 }
 
 const botQueue: Array<BotData> = new Array();
 
-async function createBot(channelName: string, botID: string, target_user_id: string, srcLanguage: LanguageName, targetLanguage: LanguageName) {
+async function createBot(channelName: string, botID: string, target_user_id: string, srcLanguage: LanguageName, targetLanguage: LanguageName, botVoiceId: VoiceId) {
     try {
         addBotId(botID, channelName)
         await axios.post('http://localhost:8080/start_agent', {
@@ -23,6 +24,7 @@ async function createBot(channelName: string, botID: string, target_user_id: str
             system_instruction: generatePromptForAgent(srcLanguage, targetLanguage),
             target_user_id: target_user_id,
             language_code: languageCodeList.find(lang => lang.name === srcLanguage)?.isoCode || "en",
+            voice: botVoiceId
         })
         console.log(`Bot created for ${botID} for ${target_user_id} from ${srcLanguage} to ${targetLanguage}`)
     } catch (error) {
@@ -33,7 +35,7 @@ async function createBot(channelName: string, botID: string, target_user_id: str
 setInterval(() => {
     const botData = botQueue.shift();
     if (botData) {
-        createBot(botData.channelName, botData.botID, botData.target_user_id, botData.srcLanguage, botData.targetLanguage);
+        createBot(botData.channelName, botData.botID, botData.target_user_id, botData.srcLanguage, botData.targetLanguage, botData.voiceId);
     }
 }, 1500)
 
@@ -45,9 +47,12 @@ export function generateBots(userData: IUserData) {
     const activeLanguagesInChannel = getActiveLanguages(channel);
     allActiveUsers.forEach(user => {
         activeLanguagesInChannel.forEach(targetLanguage => {
+            if (user.language === targetLanguage) {
+                return
+            }
             const languageBotID = generateBotID(user.uid, user.language, targetLanguage);
             if (!doesBotExist(languageBotID, channel)) {
-                botQueue.push({ channelName: channel, botID: languageBotID, target_user_id: user.uid, srcLanguage: user.language, targetLanguage });
+                botQueue.push({ channelName: channel, botID: languageBotID, target_user_id: user.uid, srcLanguage: user.language, targetLanguage, voiceId: user.voiceId });
                 // createBot(channel, languageBotID, user.uid, user.language, targetLanguage);
             }
         })

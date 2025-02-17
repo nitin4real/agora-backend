@@ -5,11 +5,12 @@ import http from 'http';
 import fs from 'fs';
 import { userNameToUid } from "./utils";
 import { GenerateTokenForUserID } from "./agoraTokenGenerator";
-import { LanguageName } from './supportedLanguages';
+import { LanguageName, VoiceId } from './supportedLanguages';
 import { addUser, clearAllData, getUserName, logAllUsersAndBots, removeBotAndUser, removeUserAndBots } from './liveData';
 import { IUserData } from './interface';
 import { generateBots } from './translatorUtils';
 import { isRecordingRunning, startWebRecordService, stopAllRecordings, stopWebRecordService } from './webRecordService';
+import { startTranscription, stopAllTranscriptions, stopTranscription } from './agoraSTTServies';
 
 export const appId = ''
 export const appCertificate = ''
@@ -34,10 +35,16 @@ app.get('/getToken', (req, res) => {
   const language = req.query.language;
   const channelName = req.query.channelName;
   const isRecorder = req.query.isRecorder == 'true';
+  const voiceId = req.query.voiceId
 
   if (typeof channelName !== 'string') {
     console.log('Invalid channel name parameter')
     return res.status(400).send({ error: 'Invalid channelName parameter' });
+  }
+
+  if (typeof voiceId !== 'string' || !Object.values(VoiceId).includes(voiceId as VoiceId)) {
+    console.log('Invalid voiceId parameter');
+    return res.status(400).send({ error: 'Invalid voiceId parameter' });
   }
 
   if (isRecorder) {
@@ -58,10 +65,6 @@ app.get('/getToken', (req, res) => {
     console.log('Invalid language parameter')
     return res.status(400).send({ error: 'Invalid language parameter' });
   }
-  if (typeof channelName !== 'string') {
-    console.log('Invalid channel name parameter')
-    return res.status(400).send({ error: 'Invalid channelName parameter' });
-  }
 
   if (!Object.values(LanguageName).includes(language as LanguageName)) {
     console.log('Invalid language parameter')
@@ -69,13 +72,14 @@ app.get('/getToken', (req, res) => {
   }
 
   const uid: string = String(userNameToUid(userName));
-  const userData: IUserData = { uid, name: userName, language: language as LanguageName, channel: channelName };
+  const userData: IUserData = { uid, name: userName, language: language as LanguageName, channel: channelName, voiceId: voiceId as VoiceId };
   addUser(userData);
   // create bots for all combinations of languages
   generateBots(userData)
-  console.log(`${new Date().toLocaleString()}: Register New User with ${uid} with ${userName} on channel ${channelName}`);
+  console.log(`${new Date().toLocaleString()}: Register New User with ${uid} with ${userName} on channel ${channelName} with voiceId ${voiceId}`);
   // call the agent to join the channel
   GenerateTokenForUserID(uid, channelName).then((tokens) => {
+    startTranscription(channelName, uid, language as LanguageName);
     res.send({ tokens, appId, uid, appkey });
   }).catch((err) => {
     res.status(500).send({ error: err });
@@ -104,6 +108,14 @@ app.get('/startRecording', (req, res) => {
 app.get('/stopRecording', (req, res) => {
   const channelName: string = req.query.channelName as string
   stopWebRecordService(channelName).then((status) => {
+    res.send({ status });
+  }).catch((err) => {
+    res.status(500).send({ error: err });
+  });
+});
+
+app.delete('/stopAllTranscriptions', (req, res) => {
+  stopAllTranscriptions().then((status) => {
     res.send({ status });
   }).catch((err) => {
     res.status(500).send({ error: err });
@@ -143,6 +155,7 @@ app.post('/user_left', (req, res) => {
   if (typeof uid !== 'string' || typeof channel_name !== 'string') {
     return res.status(400).send({ error: 'Invalid parameters' });
   }
+  stopTranscription(channel_name, uid);
   removeBotAndUser(uid, channel_name);
   removeUserAndBots(uid, channel_name);
   logAllUsersAndBots(channel_name);

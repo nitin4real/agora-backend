@@ -3,6 +3,7 @@ interface languageCodeObj {
   name: LanguageName;
   code: string;
   isoCode: string;
+  transcriptLanguageCode?: string;
 }
 
 export enum LanguageName {
@@ -68,61 +69,85 @@ export enum LanguageName {
 
 export const languageCodeList: languageCodeObj[] = [
   { name: LanguageName.Afrikaans, code: '01', isoCode: 'af' },
-  { name: LanguageName.Arabic, code: '02', isoCode: 'ar' },
+  { name: LanguageName.Arabic, code: '02', isoCode: 'ar', transcriptLanguageCode: 'ar-EG' },
   { name: LanguageName.Armenian, code: '03', isoCode: 'hy' },
   { name: LanguageName.Azerbaijani, code: '04', isoCode: 'az' },
   { name: LanguageName.Belarusian, code: '05', isoCode: 'be' },
   { name: LanguageName.Bosnian, code: '06', isoCode: 'bs' },
   { name: LanguageName.Bulgarian, code: '07', isoCode: 'bg' },
   { name: LanguageName.Catalan, code: '08', isoCode: 'ca' },
-  { name: LanguageName.Chinese, code: '09', isoCode: 'zh' },
+  { name: LanguageName.Chinese, code: '09', isoCode: 'zh', transcriptLanguageCode: 'zh-CN' },
   { name: LanguageName.Croatian, code: '10', isoCode: 'hr' },
   { name: LanguageName.Czech, code: '11', isoCode: 'cs' },
   { name: LanguageName.Danish, code: '12', isoCode: 'da' },
-  { name: LanguageName.Dutch, code: '13', isoCode: 'nl' },
-  { name: LanguageName.English, code: '14', isoCode: 'en' },
+  { name: LanguageName.Dutch, code: '13', isoCode: 'nl', transcriptLanguageCode: 'nl-NL' },
+  { name: LanguageName.English, code: '14', isoCode: 'en', transcriptLanguageCode: 'en-US' },
   { name: LanguageName.Estonian, code: '15', isoCode: 'et' },
   { name: LanguageName.Finnish, code: '16', isoCode: 'fi' },
-  { name: LanguageName.French, code: '17', isoCode: 'fr' },
+  { name: LanguageName.French, code: '17', isoCode: 'fr', transcriptLanguageCode: 'fr-FR' },
   { name: LanguageName.Galician, code: '18', isoCode: 'gl' },
-  { name: LanguageName.German, code: '19', isoCode: 'de' },
+  { name: LanguageName.German, code: '19', isoCode: 'de', transcriptLanguageCode: 'de-DE' },
   { name: LanguageName.Greek, code: '20', isoCode: 'el' },
-  { name: LanguageName.Hebrew, code: '21', isoCode: 'he' },
-  { name: LanguageName.Hindi, code: '22', isoCode: 'hi' },
+  { name: LanguageName.Hebrew, code: '21', isoCode: 'he', transcriptLanguageCode: 'he-IL' },
+  { name: LanguageName.Hindi, code: '22', isoCode: 'hi', transcriptLanguageCode: 'hi-IN' },
   { name: LanguageName.Hungarian, code: '23', isoCode: 'hu' },
   { name: LanguageName.Icelandic, code: '24', isoCode: 'is' },
-  { name: LanguageName.Indonesian, code: '25', isoCode: 'id' },
-  { name: LanguageName.Italian, code: '26', isoCode: 'it' },
-  { name: LanguageName.Japanese, code: '27', isoCode: 'ja' },
-  { name: LanguageName.Kannada, code: '28', isoCode: 'kn' },
+  { name: LanguageName.Indonesian, code: '25', isoCode: 'id', transcriptLanguageCode: 'id-ID' },
+  { name: LanguageName.Italian, code: '26', isoCode: 'it', transcriptLanguageCode: 'it-IT' },
+  { name: LanguageName.Japanese, code: '27', isoCode: 'ja', transcriptLanguageCode: 'ja-JP' },
+  { name: LanguageName.Kannada, code: '28', isoCode: 'kn', transcriptLanguageCode: 'kn-IN' },
   { name: LanguageName.Kazakh, code: '29', isoCode: 'kk' },
-  { name: LanguageName.Korean, code: '30', isoCode: 'ko' },
+  { name: LanguageName.Korean, code: '30', isoCode: 'ko', transcriptLanguageCode: 'ko-KR' },
   { name: LanguageName.Latvian, code: '31', isoCode: 'lv' },
   { name: LanguageName.Lithuanian, code: '32', isoCode: 'lt' },
   { name: LanguageName.Macedonian, code: '33', isoCode: 'mk' },
-  { name: LanguageName.Malay, code: '34', isoCode: 'ms' },
+  { name: LanguageName.Malay, code: '34', isoCode: 'ms', transcriptLanguageCode: 'ms-MY' },
   { name: LanguageName.Marathi, code: '35', isoCode: 'mr' },
   { name: LanguageName.Maori, code: '36', isoCode: 'mi' },
   { name: LanguageName.Nepali, code: '37', isoCode: 'ne' },
   { name: LanguageName.Norwegian, code: '38', isoCode: 'no' },
-  { name: LanguageName.Persian, code: '39', isoCode: 'fa' },
+  { name: LanguageName.Persian, code: '39', isoCode: 'fa', transcriptLanguageCode: 'fa-IR' },
   { name: LanguageName.Polish, code: '40', isoCode: 'pl' },
-  { name: LanguageName.Portuguese, code: '41', isoCode: 'pt' },
+  { name: LanguageName.Portuguese, code: '41', isoCode: 'pt', transcriptLanguageCode: 'pt-PT' },
   { name: LanguageName.Romanian, code: '42', isoCode: 'ro' },
-  { name: LanguageName.Russian, code: '43', isoCode: 'ru' },
+  { name: LanguageName.Russian, code: '43', isoCode: 'ru', transcriptLanguageCode: 'ru-RU' },
   { name: LanguageName.Serbian, code: '44', isoCode: 'sr' },
   { name: LanguageName.Slovak, code: '45', isoCode: 'sk' },
   { name: LanguageName.Slovenian, code: '46', isoCode: 'sl' },
-  { name: LanguageName.Spanish, code: '47', isoCode: 'es' },
+  { name: LanguageName.Spanish, code: '47', isoCode: 'es', transcriptLanguageCode: 'es-ES' },
   { name: LanguageName.Swahili, code: '48', isoCode: 'sw' },
   { name: LanguageName.Swedish, code: '49', isoCode: 'sv' },
-  { name: LanguageName.Tagalog, code: '50', isoCode: 'tl' },
-  { name: LanguageName.Tamil, code: '51', isoCode: 'ta' },
-  { name: LanguageName.Thai, code: '52', isoCode: 'th' },
-  { name: LanguageName.Turkish, code: '53', isoCode: 'tr' },
+  { name: LanguageName.Tagalog, code: '50', isoCode: 'tl', transcriptLanguageCode: 'fil-PH' },
+  { name: LanguageName.Tamil, code: '51', isoCode: 'ta', transcriptLanguageCode: 'ta-IN' },
+  { name: LanguageName.Thai, code: '52', isoCode: 'th', transcriptLanguageCode: 'th-TH' },
+  { name: LanguageName.Turkish, code: '53', isoCode: 'tr', transcriptLanguageCode: 'tr-TR' },
   { name: LanguageName.Ukrainian, code: '54', isoCode: 'uk' },
   { name: LanguageName.Urdu, code: '55', isoCode: 'ur' },
-  { name: LanguageName.Vietnamese, code: '56', isoCode: 'vi' },
+  { name: LanguageName.Vietnamese, code: '56', isoCode: 'vi', transcriptLanguageCode: 'vi-VN' },
   { name: LanguageName.Welsh, code: '57', isoCode: 'cy' },
-  { name: LanguageName.Bengali, code: '58', isoCode: 'bn'}
+  { name: LanguageName.Bengali, code: '58', isoCode: 'bn', transcriptLanguageCode: 'bn-IN' }
 ];
+
+export const isAgoraSTTLanguage = (language: LanguageName): boolean => {
+  return languageCodeList.find(lang => lang.name === language).transcriptLanguageCode !== undefined
+}
+
+export const getTranscriptLanguageCode = (language: LanguageName): string => {
+  return languageCodeList.find(lang => lang.name === language)?.transcriptLanguageCode
+}
+
+
+export enum VoiceId {
+  Alloy = "alloy",
+  Echo = "echo",
+  Fable = "fable",
+  Nova = "nova",
+  Nova_2 = "nova_2",
+  Nova_3 = "nova_3",
+  Nova_4 = "nova_4",
+  Nova_5 = "nova_5",
+  Onyx = "onyx",
+  Shimmer = "shimmer",
+  Ash = "ash",
+  Sage = 'sage'
+}

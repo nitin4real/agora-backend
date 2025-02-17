@@ -1,4 +1,4 @@
-import { LanguageName } from "./supportedLanguages";
+import { LanguageName, VoiceId } from "./supportedLanguages";
 
 
 export interface IUserData {
@@ -6,4 +6,5 @@ export interface IUserData {
     name: string;
     language: LanguageName;
     channel: string;
+    voiceId: VoiceId;
 }
