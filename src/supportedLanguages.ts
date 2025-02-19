@@ -129,7 +129,7 @@ export const languageCodeList: languageCodeObj[] = [
 ];
 
 export const isAgoraSTTLanguage = (language: LanguageName): boolean => {
-  return languageCodeList.find(lang => lang.name === language).transcriptLanguageCode !== undefined
+  return languageCodeList.find(lang => lang.name === language)?.transcriptLanguageCode !== undefined
 }
 
 export const getTranscriptLanguageCode = (language: LanguageName): string => {

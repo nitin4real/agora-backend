@@ -109,8 +109,8 @@ export const startWebRecordService = async (channelName: string): Promise<Record
                                 "serviceParam": {
                                     "url": `https://s2s-agora-openai-demo.vercel.app/meet/${channelName}/language?isRecorder=recorder`,
                                     "audioProfile": 1,
-                                    "videoWidth": 1280,
-                                    "videoHeight": 720,
+                                    "videoWidth": 1920,
+                                    "videoHeight": 1080,
                                     "maxRecordingHour": 1
                                 }
                             }
