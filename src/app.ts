@@ -5,7 +5,7 @@ import http from 'http';
 import fs from 'fs';
 import { userNameToUid } from "./utils";
 import { GenerateTokenForUserID } from "./agoraTokenGenerator";
-import { LanguageName, VoiceId } from './supportedLanguages';
+import { isAgoraSTTLanguage, LanguageName, VoiceId } from './supportedLanguages';
 import { addUser, clearAllData, getUserName, logAllUsersAndBots, removeBotAndUser, removeUserAndBots } from './liveData';
 import { IUserData } from './interface';
 import { generateBots } from './translatorUtils';
@@ -33,6 +33,7 @@ app.use(express.json());
 app.get('/getToken', (req, res) => {
   const userName = req.query.userId;
   const language = req.query.language;
+  const secondaryLanguage = req.query.secondaryLanguage;
   const channelName = req.query.channelName;
   const isRecorder = req.query.isRecorder == 'true';
   const voiceId = req.query.voiceId
@@ -79,7 +80,9 @@ app.get('/getToken', (req, res) => {
   console.log(`${new Date().toLocaleString()}: Register New User with ${uid} with ${userName} on channel ${channelName} with voiceId ${voiceId}`);
   // call the agent to join the channel
   GenerateTokenForUserID(uid, channelName).then((tokens) => {
-    startTranscription(channelName, uid, language as LanguageName);
+    if (isAgoraSTTLanguage(language as LanguageName)){
+      startTranscription(channelName, uid, language as LanguageName, secondaryLanguage as LanguageName);
+    }
     res.send({ tokens, appId, uid, appkey });
   }).catch((err) => {
     res.status(500).send({ error: err });

@@ -1,7 +1,7 @@
 import axios from "axios";
 import { generateBotID, generatePromptForAgent } from "./utils";
 import { IUserData } from "./interface";
-import { languageCodeList, LanguageName, VoiceId } from "./supportedLanguages";
+import { isAgoraSTTLanguage, languageCodeList, LanguageName, VoiceId } from "./supportedLanguages";
 import { addBotId, doesBotExist, getActiveLanguages, getActiveUsers } from "./liveData";
 
 interface BotData {
@@ -47,7 +47,7 @@ export function generateBots(userData: IUserData) {
     const activeLanguagesInChannel = getActiveLanguages(channel);
     allActiveUsers.forEach(user => {
         activeLanguagesInChannel.forEach(targetLanguage => {
-            if (user.language === targetLanguage) {
+            if (user.language === targetLanguage && isAgoraSTTLanguage(user.language)) {
                 return
             }
             const languageBotID = generateBotID(user.uid, user.language, targetLanguage);

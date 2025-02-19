@@ -1,7 +1,7 @@
 import axios from "axios"
 import { appId } from "./app"
 import { CUSTOMER_SECRET, CUSTOMERID } from "./webRecordService"
-import { getTranscriptLanguageCode, LanguageName } from "./supportedLanguages"
+import { getTranscriptLanguageCode, isAgoraSTTLanguage, LanguageName } from "./supportedLanguages"
 import { generateBotID } from "./utils"
 import { GenerateTokenForUserID } from "./agoraTokenGenerator"
 import fs from 'fs';
@@ -49,7 +49,7 @@ const getTranscriptProcess = (channelName: string, uid: string): ITranscriptProc
 }
 
 
-export const startTranscription = async (channelName: string, userUid: string, userLanguage: LanguageName): Promise<TranscriptStatus> => {
+export const startTranscription = async (channelName: string, userUid: string, userLanguage: LanguageName, userSecondaryLanguage: LanguageName): Promise<TranscriptStatus> => {
     try {
         console.log('Starting Transcriptions for', 'for user', userUid, 'in channel', channelName)
         const transcriptProcess = getTranscriptProcess(channelName, userUid)
@@ -72,14 +72,21 @@ export const startTranscription = async (channelName: string, userUid: string, u
         })
         const resourceId = resourceResponse?.data?.tokenName
         // setResourceID(channelName, resourceId)
-        console.log('Starting transcription with resourceID', resourceId, 'for user', userUid, 'in channel', channelName)
         const subuid = userUid + "1"
         const putuid = generateBotID(userUid, userLanguage, userLanguage)
         const transcriptionCode = getTranscriptLanguageCode(userLanguage)
+        let transcriptionCode2 = ''
+        if (userSecondaryLanguage && isAgoraSTTLanguage(userSecondaryLanguage)) {
+            transcriptionCode2 = getTranscriptLanguageCode(userSecondaryLanguage)
+        }
         const startResponse = await axios.post(`https://api.agora.io/v1/projects/${appId}/rtsc/speech-to-text/tasks?builderToken=${resourceId}`,
             {
-                "languages": [
+                "languages": transcriptionCode2 ? 
+                [
                     transcriptionCode,
+                    transcriptionCode2
+                ] : [
+                    transcriptionCode
                 ],
                 "maxIdleTime": 60,
                 "rtcConfig": {
@@ -152,7 +159,7 @@ export const stopTranscription = async (channelName: string, uid: string): Promi
             }
         )
         deleteTranscriptProcess(channelName, uid)
-        console.log('Successfully stopped transcription with tid: ', stopResponse?.data?.taskId)
+        console.log('Successfully stopped transcription with tid: ', taskId)
         return TranscriptStatus.STOPPED
     }
     catch (error) {
