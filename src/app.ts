@@ -42,11 +42,6 @@ app.get('/getToken', (req, res) => {
     return res.status(400).send({ error: 'Invalid channelName parameter' });
   }
 
-  if (typeof voiceId !== 'string' || !Object.values(VoiceId).includes(voiceId as VoiceId)) {
-    console.log('Invalid voiceId parameter');
-    return res.status(400).send({ error: 'Invalid voiceId parameter' });
-  }
-
   if (isRecorder) {
     console.log(`${new Date().toLocaleString()}: Register New Recorder with ${channelName} ${req.query.isRecorder}`);
     GenerateTokenForUserID('11', channelName).then((tokens) => {
@@ -55,6 +50,11 @@ app.get('/getToken', (req, res) => {
       res.status(500).send({ error: err });
     })
     return;
+  }
+
+  if (typeof voiceId !== 'string' || !Object.values(VoiceId).includes(voiceId as VoiceId)) {
+    console.log('Invalid voiceId parameter');
+    return res.status(400).send({ error: 'Invalid voiceId parameter' });
   }
 
   if (typeof userName !== 'string') {
