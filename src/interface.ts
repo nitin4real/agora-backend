@@ -7,4 +7,5 @@ export interface IUserData {
     language: LanguageName;
     channel: string;
     voiceId: VoiceId;
+    isGemini: boolean;
 }

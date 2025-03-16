@@ -37,6 +37,7 @@ app.get('/getToken', (req, res) => {
   const channelName = req.query.channelName;
   const isRecorder = req.query.isRecorder == 'true';
   const voiceId = req.query.voiceId
+  const isGemini = req.query.llmId == 'gemini';
 
   if (typeof channelName !== 'string') {
     console.log('Invalid channel name parameter')
@@ -73,7 +74,7 @@ app.get('/getToken', (req, res) => {
   }
 
   const uid: string = String(userNameToUid(userName));
-  const userData: IUserData = { uid, name: userName, language: language as LanguageName, channel: channelName, voiceId: voiceId as VoiceId };
+  const userData: IUserData = { uid, name: userName, language: language as LanguageName, channel: channelName, voiceId: voiceId as VoiceId, isGemini };
   addUser(userData);
   // create bots for all combinations of languages
   generateBots(userData)
