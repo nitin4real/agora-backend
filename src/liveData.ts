@@ -1,9 +1,10 @@
 import { IUserData } from './interface';
 import { LanguageName } from './supportedLanguages';
 import { stopWebRecordService } from './webRecordService';
-
+import { stopAgoraConvoAIAgent } from './translatorUtils';
 export const activeUsers: Map<string, IUserData[]> = new Map<string, IUserData[]>();
 export const activeBotsIds: Map<string, string[]> = new Map<string, string[]>(); // channelName -> Set of botIds in the channel
+export const activeConvoAIAgents: Map<string, string> = new Map<string, string>(); // botId -> agentId
 export const liveLanguages: Map<string, Set<LanguageName>> = new Map<string, Set<LanguageName>>(); // channelName -> Set of languages in the channel
 export const activeChatRoomIds = new Map<string, string>(); // channelName -> chatRoomId
 
@@ -69,7 +70,16 @@ export function addBotId(botId: string, channelName: string) {
     activeBotsIds.get(channelName)?.push(botId);
 }
 
+export function addConvoAIAgent(botId: string, agentId: string) {
+    activeConvoAIAgents.set(botId, agentId);
+}
+
+export function removeConvoAIAgent(botId: string) {
+    activeConvoAIAgents.delete(botId);
+}
+
 export function removeBotId(botId: string, channelName: string) {
+    stopAgoraConvoAIAgent(botId)
     const bots = activeBotsIds.get(channelName);
     if (bots) {
         const index = bots.findIndex((id: string) => id === botId);
@@ -111,6 +121,7 @@ export function removeBotAndUser(botId: string, channelName: string) {
         return
     }
     removeBotId(botId, channelName)
+    stopAgoraConvoAIAgent(botId)
     const userId = botId.slice(0, 4)
     removeUser(userId, channelName)
 }
@@ -147,7 +158,6 @@ export function logAllUsersAndBots(channelName){
     logAllUsers(channelName)
     logAllBots(channelName)
 }
-
 
 // add active channelRoomId
 export function addChatRoomId(channelName: string, chatRoomId: string) {

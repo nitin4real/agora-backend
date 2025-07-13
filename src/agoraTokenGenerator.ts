@@ -1,15 +1,14 @@
 import { RtcRole, RtcTokenBuilder, RtmTokenBuilder, ChatTokenBuilder } from "agora-token";
-import { appId, appCertificate, orgName, appName } from "./app";
 import axios from "axios";
 import { addChatRoomId, getChatRoomId, isChatRoomIdActive } from "./liveData";
-
+import { config, isProd } from "./config";
 let chatAppToken = ''
 
 const generateChatAppToken = () => {
   const expirationTimeInSeconds = 82800;
   chatAppToken = ChatTokenBuilder.buildAppToken(
-    appId,
-    appCertificate,
+    config.AGORA_APP_ID,
+    config.AGORA_CERT,
     expirationTimeInSeconds
   )
 }
@@ -30,8 +29,8 @@ export const GenerateTokenForUserID = async (uid: string, channelName: string = 
   const chatRoomId = await createChatRoom(channelName, uid)
 
   const rtcToken = RtcTokenBuilder.buildTokenWithUid(
-    appId,
-    appCertificate,
+    config.AGORA_APP_ID,
+    config.AGORA_CERT,
     channelName,
     uid,
     role,
@@ -40,15 +39,15 @@ export const GenerateTokenForUserID = async (uid: string, channelName: string = 
   );
 
   const rtmToken = RtmTokenBuilder.buildToken(
-    appId,
-    appCertificate,
+    config.AGORA_APP_ID,
+    config.AGORA_CERT,
     uid,
     expirationTimeInSeconds
   );
 
   const chatToken = ChatTokenBuilder.buildUserToken(
-    appId,
-    appCertificate,
+    config.AGORA_APP_ID,
+    config.AGORA_CERT,
     uid,
     privilegeExpiredTs
   )
@@ -60,7 +59,7 @@ export const GenerateTokenForUserID = async (uid: string, channelName: string = 
 const registerUser = async (uid: string) => {
   if (uid.length !== 4) return 'Invalid uid'
   try {
-    const registerUserResponse = await axios.post(`https://a61.chat.agora.io/${orgName}/${appName}/users`,
+    const registerUserResponse = await axios.post(`https://a61.chat.agora.io/${config.ORG_NAME}/${config.APP_NAME}/users`,
       {
         username: uid
       },
@@ -91,7 +90,7 @@ const createChatRoom = async (channelName, uid) => {
     return getChatRoomId(channelName)
   }
   try {
-    const chatRoomCreateResponse = await axios.post(`https://a61.chat.agora.io/${orgName}/${appName}/chatrooms`,
+    const chatRoomCreateResponse = await axios.post(`https://a61.chat.agora.io/${config.ORG_NAME}/${config.APP_NAME}/chatrooms`,
       {
         name: channelName,
         desc: 'Chat room for the channel',

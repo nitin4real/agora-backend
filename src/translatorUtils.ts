@@ -1,56 +1,168 @@
 import axios from "axios";
 import { generateBotID, generatePromptForAgent } from "./utils";
 import { IUserData } from "./interface";
-import { isAgoraSTTLanguage, languageCodeList, LanguageName, VoiceId } from "./supportedLanguages";
-import { addBotId, doesBotExist, getActiveLanguages, getActiveUsers } from "./liveData";
-
+import { getLanguageCode, LanguageName } from "./supportedLanguages";
+import { addBotId, doesBotExist, getActiveLanguages, getActiveUsers, addConvoAIAgent, removeConvoAIAgent, activeConvoAIAgents } from "./liveData";
+import { RtcRole } from "agora-token";
+import { RtcTokenBuilder } from "agora-token";
+import { config } from "./config";
 interface BotData {
     channelName: string;
     botID: string;
     target_user_id: string;
     srcLanguage: LanguageName;
     targetLanguage: LanguageName;
-    voiceId: VoiceId;
+    voiceId: string;
     isGemini: boolean;
 }
 
 const botQueue: Array<BotData> = new Array();
 
-async function createBot(channelName: string, botID: string, target_user_id: string, srcLanguage: LanguageName, targetLanguage: LanguageName, botVoiceId: VoiceId, isGemini: boolean = false) {
-    try {
-        addBotId(botID, channelName)
-        if (!isGemini) {
-            await axios.post('http://localhost:8080/start_agent', {
-                channel_name: channelName,
-                uid: botID,
-                system_instruction: generatePromptForAgent(srcLanguage, targetLanguage),
-                target_user_id: target_user_id,
-                language_code: languageCodeList.find(lang => lang.name === srcLanguage)?.isoCode || "en",
-                voice: botVoiceId
-            })
-        } else {
-            await axios.post('http://localhost:8082/start', {
-                request_id: Math.random().toString(36).substring(7),
-                channel_name: channelName,
-                user_uid: Number(target_user_id),
-                graph_name: "voice_assistant",
-                voice_type: 'male',
-                bot_uid: Number(botID),
-                timeout: 1200,
-                properties: {
-                    llm: {
-                        prompt: generatePromptForAgent(srcLanguage, targetLanguage),
-                    },
-                    stt: {
-                        lang_code: languageCodeList.find(lang => lang.name === srcLanguage)?.transcriptLanguageCode || "en-US",
-                    },
-                    tts: {
-                        voice_id: botVoiceId === 'sage' ? 'Xb7hH8MSUJpSbSDYk0k2' : "nPczCjzI2devNBz1zQrb"
-                    }
-                }
-            })
+const generateBotToken = ({
+    channel_name,
+    botId
+}) => {
+    const expirationTimeInSeconds = 6000;
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+    const privilegeExpiredTs = currentTimestamp + expirationTimeInSeconds;
+    const role = RtcRole.PUBLISHER;
+
+    const rtcToken = RtcTokenBuilder.buildTokenWithUid(
+        config.AGORA_APP_ID,
+        config.AGORA_CERT,
+        channel_name,
+        botId,
+        role,
+        expirationTimeInSeconds,
+        privilegeExpiredTs
+    );
+    return rtcToken
+}
+
+const getAuthHeader = () => {
+    const plainCredential = `${config.CUSTOMERID}:${config.CUSTOMER_SECRET}`;
+    const encodedCredential = Buffer.from(plainCredential).toString('base64');
+    return `Basic ${encodedCredential}`;
+}
+
+const getHeaders = () => {
+    return {
+        headers: {
+            'Authorization': getAuthHeader(),
+            'Content-Type': 'application/json'
         }
-        console.log(`Bot created for ${botID} for ${target_user_id} from ${srcLanguage} to ${targetLanguage}`)
+    }
+}
+
+const startAgoraConvoAIAgent = async ({
+    channelName,
+    botID,
+    srcLanguage,
+    targetLanguage,
+    target_user_id,
+    botVoiceId
+}) => {
+    const agoraLanguageCode = getLanguageCode(srcLanguage)
+    if (!agoraLanguageCode) {
+        console.log("NOT AGORA STT LANGUAGE", srcLanguage)
+        return
+    }
+    const agentToken = generateBotToken({
+        botId: botID,
+        channel_name: channelName
+    })
+
+    const properties = {
+        channel: channelName,
+        token: agentToken,
+        agent_rtc_uid: botID,
+        remote_rtc_uids: [target_user_id], // use req user id as remote uid
+        enable_string_uid: false,
+        idle_timeout: 10,
+        parameters: {
+            interruptable: 'append'
+        },
+        llm: {
+            url: "https://api.openai.com/v1/chat/completions",
+            api_key: config.OPENAI_API_KEY,
+            system_messages: [
+                {
+                    role: "system",
+                    content: generatePromptForAgent(srcLanguage, targetLanguage)
+                }
+            ],
+            greeting_message: "",
+            failure_message: "There is some problem with the translator.",
+            max_history: 20,
+            params: {
+                model: "gpt-4o-mini"
+            }
+        },
+        vad: {
+            silence_duration_ms: 200
+        },
+        turn_detection: {
+            interrupt_mode: 'append'
+        },
+        asr: {
+            language: agoraLanguageCode
+        },
+
+        tts: {
+            vendor: "elevenlabs",
+            params: {
+                key: config.ELEVENLABS_API_KEY,
+                model_id: "eleven_flash_v2_5",
+                voice_id: botVoiceId,
+            }
+        }
+    }
+    console.log("properties", properties)
+    const response = await axios.post(`https://api.agora.io/api/conversational-ai-agent/v2/projects/${config.AGORA_APP_ID}/join`, {
+        name: `agent_${botID}`,
+        properties,
+    },
+        getHeaders()
+    )
+    console.log("started a agent", response.data)
+    return response.data
+}
+
+
+export async function stopAgoraConvoAIAgent(botId: string) {
+    const agentId = activeConvoAIAgents.get(botId);
+    if (!agentId) {
+        console.log("No agent found for botId", botId)
+        return
+    }
+    try {
+        removeConvoAIAgent(botId)
+        const response = await axios.post(`https://api.agora.io/api/conversational-ai-agent/v2/projects/${config.AGORA_APP_ID}/agents/${agentId}/leave`, {},
+            getHeaders()
+        )
+        console.log("stopped a agent", response.data, agentId)
+    } catch (error) {
+        console.log("Error in stopping agent:botid", botId, agentId)
+    }
+}
+
+async function createBot(channelName: string, botID: string, target_user_id: string, srcLanguage: LanguageName, targetLanguage: LanguageName, botVoiceId: string) {
+    try {
+        const response = await startAgoraConvoAIAgent({
+            channelName,
+            botID,
+            srcLanguage,
+            targetLanguage,
+            target_user_id,
+            botVoiceId
+        })
+        if (response.status === 'RUNNING') {
+            addBotId(botID, channelName)
+            addConvoAIAgent(botID, response.agent_id)
+            console.log(`Bot created for ${botID} for ${target_user_id} from ${srcLanguage} to ${targetLanguage}`)
+        } else {
+            console.log(`Bot creation failed for ${botID} for ${target_user_id} from ${srcLanguage} to ${targetLanguage}`)
+        }
     } catch (error) {
         console.log(`Err in creating bot ${error}`)
     }
@@ -59,9 +171,9 @@ async function createBot(channelName: string, botID: string, target_user_id: str
 setInterval(() => {
     const botData = botQueue.shift();
     if (botData) {
-        createBot(botData.channelName, botData.botID, botData.target_user_id, botData.srcLanguage, botData.targetLanguage, botData.voiceId, botData.isGemini);
+        createBot(botData.channelName, botData.botID, botData.target_user_id, botData.srcLanguage, botData.targetLanguage, botData.voiceId);
     }
-}, 1000)
+}, 100)
 
 // generate bots for all the languages
 export function generateBots(userData: IUserData) {
@@ -71,7 +183,7 @@ export function generateBots(userData: IUserData) {
     const activeLanguagesInChannel = getActiveLanguages(channel);
     allActiveUsers.forEach(user => {
         activeLanguagesInChannel.forEach(targetLanguage => {
-            if (user.language === targetLanguage && isAgoraSTTLanguage(user.language)) {
+            if (user.language === targetLanguage) {
                 return
             }
             const languageBotID = generateBotID(user.uid, user.language, targetLanguage);

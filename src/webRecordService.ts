@@ -1,12 +1,5 @@
 import axios from "axios"
-import { appId } from "./app"
-
-
-const S2_BUCKET = process.env.S2_BUCKET
-const S2_SECRET_KEY = process.env.S2_SECRET_KEY
-const S2_ACCESS_KEY_ID = process.env.S2_ACCESS_KEY_ID
-const CUSTOMER_SECRET = process.env.CUSTOMER_SECRET
-const CUSTOMERID = process.env.CUSTOMERID
+import { config } from "./config"
 
 export enum RecorderStatus {
     STARTED = 'STARTED',
@@ -73,7 +66,7 @@ export const startWebRecordService = async (channelName: string): Promise<Record
             return RecorderStatus.ALREADY_RECORDING
         }
         createRecorderInstance(channelName)
-        const resourceResponse = await axios.post(`https://api.agora.io/v1/apps/${appId}/cloud_recording/acquire`,
+        const resourceResponse = await axios.post(`https://api.agora.io/v1/apps/${config.AGORA_APP_ID}/cloud_recording/acquire`,
             {
                 "cname": "anything",
                 "uid": "43211",
@@ -86,15 +79,15 @@ export const startWebRecordService = async (channelName: string): Promise<Record
                 'Content-Type': 'application/json',
             },
             auth: {
-                username: CUSTOMERID,
-                password: CUSTOMER_SECRET
+                username: config.CUSTOMERID,
+                password: config.CUSTOMER_SECRET
             }
         })
         const resourceId = resourceResponse?.data?.resourceId
         setResourceID(channelName, resourceId)
         console.log('Successfully acquired resource', resourceId)
         console.log('Starting recording')
-        const startResponse = await axios.post(`https://api.agora.io/v1/apps/${appId}/cloud_recording/resourceid/${resourceId}/mode/web/start`,
+        const startResponse = await axios.post(`https://api.agora.io/v1/apps/${config.AGORA_APP_ID}/cloud_recording/resourceid/${resourceId}/mode/web/start`,
             {
                 "cname": "anything",
                 "uid": "43211",
@@ -125,9 +118,9 @@ export const startWebRecordService = async (channelName: string): Promise<Record
                     "storageConfig": {
                         "vendor": 1,
                         "region": 14,
-                        "bucket": S2_BUCKET,
-                        "accessKey": S2_ACCESS_KEY_ID,
-                        "secretKey": S2_SECRET_KEY
+                        "bucket": config.S2_BUCKET,
+                        "accessKey": config.S2_ACCESS_KEY_ID,
+                        "secretKey": config.S2_SECRET_KEY
                     }
                 }
             },
@@ -136,8 +129,8 @@ export const startWebRecordService = async (channelName: string): Promise<Record
                     'Content-Type': 'application/json',
                 },
                 auth: {
-                    username: CUSTOMERID,
-                    password: CUSTOMER_SECRET
+                    username: config.CUSTOMERID,
+                    password: config.CUSTOMER_SECRET
                 }
             }
         )
@@ -159,7 +152,7 @@ export const stopWebRecordService = async (channelName: string): Promise<Recorde
         if (recorderInstance === undefined) {
             return RecorderStatus.ERROR
         }
-        const stopResponse = await axios.post(`https://api.agora.io/v1/apps/${appId}/cloud_recording/resourceid/${recorderInstance.resourceId}/sid/${recorderInstance.sid}/mode/web/stop`,
+        const stopResponse = await axios.post(`https://api.agora.io/v1/apps/${config.AGORA_APP_ID}/cloud_recording/resourceid/${recorderInstance.resourceId}/sid/${recorderInstance.sid}/mode/web/stop`,
             {
                 "cname": "anything",
                 "uid": "43211",
@@ -170,8 +163,8 @@ export const stopWebRecordService = async (channelName: string): Promise<Recorde
                     'Content-Type': 'application/json',
                 },
                 auth: {
-                    username: CUSTOMERID,
-                    password: CUSTOMER_SECRET
+                    username: config.CUSTOMERID,
+                    password: config.CUSTOMER_SECRET
                 }
             }
         )
@@ -190,12 +183,4 @@ export const stopAllRecordings = async () => {
     recorderInstances.forEach(async (recorderInstance) => {
         await stopWebRecordService(recorderInstance.channelName)
     })
-}
-
-export {
-    S2_BUCKET,
-    S2_SECRET_KEY,
-    S2_ACCESS_KEY_ID,
-    CUSTOMER_SECRET,
-    CUSTOMERID,
 }

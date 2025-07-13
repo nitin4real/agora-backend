@@ -1,4 +1,4 @@
-import { LanguageName, VoiceId } from "./supportedLanguages";
+import { LanguageName } from "./supportedLanguages";
 
 
 export interface IUserData {
@@ -6,6 +6,6 @@ export interface IUserData {
     name: string;
     language: LanguageName;
     channel: string;
-    voiceId: VoiceId;
+    voiceId: string;
     isGemini: boolean;
 }
