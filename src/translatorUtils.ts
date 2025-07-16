@@ -91,6 +91,7 @@ const startAgoraConvoAIAgent = async ({
                     content: generatePromptForAgent(srcLanguage, targetLanguage)
                 }
             ],
+            ignore_empty: true,
             greeting_message: "",
             failure_message: "There is some problem with the translator.",
             max_history: 20,
